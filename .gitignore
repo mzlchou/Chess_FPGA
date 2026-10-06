@@ -1,0 +1,16 @@
+# Vivado generated output
+*.cache/
+*.runs/
+*.sim/
+*.gen/
+*.hw/
+*.ip_user_files/
+.Xil/
+xsim.dir/
+*.jou
+*.log
+*.str
+*.pb
+*.wdb
+*.backup.*
+vivado/
