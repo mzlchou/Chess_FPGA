@@ -41,3 +41,4 @@ Thumbs.db
 *.h5
 # Weight blobs made by accelerator/scripts/export.py
 *.blob
+.claude/
