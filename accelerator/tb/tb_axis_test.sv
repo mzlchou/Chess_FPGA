@@ -106,7 +106,7 @@ module tb_axis_test;
     $finish;
   end
 
-  // ---- Watchdog: give up if the design hangs --------------------------------
+  // ---- Give up if the design hangs --------------------------------
   initial begin
     #100us;
     $display("FAIL: timeout, %0d sent, %0d received", sent, received);
