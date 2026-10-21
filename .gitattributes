@@ -1,0 +1,6 @@
+# Store text files with LF line endings in the repo.
+* text=auto
+
+# Scripts that run on the Kria (Linux) must keep LF on every machine.
+*.sh text eol=lf
+*.py text eol=lf
