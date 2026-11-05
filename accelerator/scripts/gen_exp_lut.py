@@ -15,35 +15,46 @@ import argparse
 import math
 from pathlib import Path
 
-
 def generate_lut(scale: float, depth: int, out_path: Path):
+    """
+    Function: generate_lut
+    Purpose: Create a LUT for exp(x), ranging from exp(-512 * S) to exp(0)
+    
+    Parameters: 
+        Scale: The max magnitude the NN ranges in weight values. In this instance, 496 was given,
+               divided by 2^15 
+        Depth: Number of Entries in LUT (512)
+        Out_path: Path to output .mem file
+    
+    Returns: 
+        None
+    """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as f:
+        # Define the Header Value for the LUT in .mem format
         f.write(f"// {depth}-entry LUT for exp(-k * scale)\n")
         f.write(f"// Scale: {scale:.10f} (from centered score range ~496 / 32768)\n")
         f.write("// Format: 16-bit hex, Unsigned Q0.16 (0xFFFF = 1.0)\n")
-        f.write("// Index k = (x_max - x), where k in [0, depth-1]\n")
+        f.write("// Index k = (x_max - x), where k in [0, depth - 1]\n")
         
+        # Let k be x_max - x. Then k must be nonnegative
         for k in range(depth):
+            # exp() calculation
             val_real = math.exp(-k * scale)
+
+            # Convert to Q0.16 format, all 16 bits to Fractional Value
             val_q16 = int(round(val_real * 65535.0))
+
+            # Clip Values, ensures that 0 <= val_q16 <= 0xFFFF
             val_q16 = min(max(val_q16, 0), 0xFFFF)
+
+            # Convert to Hex
             f.write(f"{val_q16:04X}\n")
-
-    print(f"Generated {depth} entries in {out_path}")
-    print(f"  k = 0   (diff =  0.00): exp( 0.00) = 1.000000 -> 0x{int(round(math.exp(0)*65535)):04X}")
-    print(f"  k = 1   (diff = -{scale:.4f}): exp(-{scale:.4f}) = {math.exp(-scale):.6f} -> 0x{int(round(math.exp(-scale)*65535)):04X}")
-    k_half = int(round(1.0 / scale))
-    print(f"  k = {k_half}  (diff = -1.00): exp(-1.00) = {math.exp(-k_half*scale):.6f} -> 0x{int(round(math.exp(-k_half*scale)*65535)):04X}")
-    print(f"  k = {depth-1} (diff = -{(depth-1)*scale:.2f}): exp(-{(depth-1)*scale:.2f}) = {math.exp(-(depth-1)*scale):.6f} -> 0x{int(round(math.exp(-(depth-1)*scale)*65535)):04X}")
-    val_clip = math.exp(-depth * scale)
-    print(f"  Clip boundary (k >= {depth}): real value <= {val_clip:.6f} (< {int(round(val_clip*65535))}/65535, clipped to 0)")
-
 
 def main():
     parser = argparse.ArgumentParser(description="Generate 1KB exp() LUT for Softmax")
     parser.add_argument("--scale", type=float, default=496.0 / 32768.0,
-                        help="Scale per LSB (default: 496.0/32768.0 = 0.01513671875)")
+                        help="Scale per LSB (default: 496.0/32768.0  ~0.01514)")
     parser.add_argument("--depth", type=int, default=512,
                         help="Number of LUT entries (default: 512, fits in 1KB)")
     parser.add_argument("--out", type=str, default=None,
