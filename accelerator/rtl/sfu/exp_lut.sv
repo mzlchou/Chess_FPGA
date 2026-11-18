@@ -19,7 +19,7 @@ module exp_lut #(
   parameter int    DEPTH     = 512,          // Number of LUT entries
   parameter int    DATA_W    = 16,           // Output width: Q0.16 fixed point
   parameter int    DELTA_W   = 16,           // Input delta width
-  parameter string INIT_FILE = "exp_lut.mem" // Initialization memory file
+  parameter        INIT_FILE = "exp_lut.mem" // Initialization memory file (no "string" so Icarus compiles)
 ) (
   input  logic               clk,
   input  logic               rst_n,
