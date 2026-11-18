@@ -22,6 +22,10 @@
 // =============================================================================
 `timescale 1ns / 1ps
 
+// use_dsp: put the multiply-accumulate in a DSP48E2 at every width. Without it,
+// Vivado builds 8 x 8 MACs from LUTs and carry chains (Nov 18 synthesis: 0 DSPs,
+// 48,129 LUTs for a 64 x 8 array).
+(* use_dsp = "yes" *)
 module pe
   import accel_pkg::*;
 #(
@@ -52,9 +56,13 @@ module pe
   // Pipeline registers
   logic signed [A_W-1:0] a_1;
   logic signed [W_W-1:0] w_1;
-  logic                  en_1, clear_1;
   logic signed [P_W-1:0] prod_1;
-  logic                  en_2, clear_2;
+  // Control pipeline. Every pe in mac_array holds the same values here, so
+  // Vivado would merge them into one register driving every DSP (Nov 18
+  // synthesis: fan-out 512 at COLS 8, 1,024 at COLS 16). KEEP stops that merge
+  // in synthesis only, so place and route may still replicate if it needs to.
+  (* keep = "true" *) logic en_1, clear_1;
+  (* keep = "true" *) logic en_2, clear_2;
 
   // Register the inputs
   // a, w, en, clear  ->  a_1, w_1, en_1, clear_1
