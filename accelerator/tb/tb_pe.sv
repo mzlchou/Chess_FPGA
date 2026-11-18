@@ -97,7 +97,7 @@ module pe_check #(
       end else if (cyc < 3*RUN) begin        // largest negative product, a positive (UINT16 max at A_W=17)
         new_en = 1; new_clear = (cyc == 2*RUN);   new_a = A_MAX; new_w = W_MIN;
       end else if (cyc < N_CYCLES) begin     // random: gaps, random restarts
-        new_en    = ($urandom_range(0, 9) < 8);
+        new_en    = (cyc == 3*RUN) || ($urandom_range(0, 9) < 8);   // the restart below must be enabled
         new_clear = (cyc == 3*RUN) || ($urandom_range(0, 63) == 0);  // restart after the edge runs
         new_a     = $signed(A_W'($urandom));
         new_w     = $signed(W_W'($urandom));
