@@ -35,8 +35,8 @@ catch {close_project}
 create_project $proj_name $proj_dir -part $part -force
 set_property board_part $board_part [current_project]
 
-# ---- Design sources: every .sv and .v one folder below rtl/ -----------------
-set rtl_files [glob -nocomplain [file join $root rtl * *.sv] [file join $root rtl * *.v]]
+# ---- Design sources: every .sv, .v, and .mem one folder below rtl/ ----------
+set rtl_files [glob -nocomplain [file join $root rtl * *.sv] [file join $root rtl * *.v] [file join $root rtl * *.mem]]
 if {[llength $rtl_files] > 0} {
     add_files -fileset sources_1 -norecurse $rtl_files
 }
