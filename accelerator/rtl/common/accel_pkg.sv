@@ -27,6 +27,11 @@ package accel_pkg;
   localparam int COLS   = 8;      // output columns computed per pass (self explanatory)
   localparam int DW     = 8;      // weight and activation width: INT8 (self explanatory)
   localparam int ACCW   = 32;     // accumulator width: INT32 (self explanatory)
+  // MAC array widths (pe, mac_array). One DSP48E2 per MAC holds up to 27 x 18 with a 48-bit sum.
+  // TBD: 16-bit Q/K with a 40-bit accumulator is the open question to Matthew; 8-bit with INT32 is the other option
+  localparam int MAC_A_W   = 17;  // lane operand: 16-bit activation, or UINT16 probability zero-extended to 17
+  localparam int MAC_W_W   = 16;  // column operand: INT8 weight sign-extended, or a 16-bit K / V word
+  localparam int MAC_ACC_W = 40;  // accumulator: data-by-data 16 x 16 sums need 36 to 39 bits (N6)
   localparam int RD_LAT = 2;      // memory read latency, in clock cycles (read latency is how many cycles it takes to get data back from memory after you ask for it)
   localparam int AXIS_W = 64;     // DMA stream width, in bits (axi stream width is how many bits the DMA sends in one beat)
 
