@@ -17,6 +17,8 @@
 //   ACC_W accumulator width.
 // One DSP48E2 holds A_W <= 27 and W_W <= 18 (27 x 18 multiplier), and keeps
 // 48 bits of accumulator, so ACC_W <= 48.
+//Original pe was hard-wired to 8 x 8 bits summed into 32. The array has to run 
+// every matmul in the model, and some of them don’t fit in 8 bits.
 // =============================================================================
 `timescale 1ns / 1ps
 
