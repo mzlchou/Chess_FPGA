@@ -1,6 +1,6 @@
 # Memory map
 
-v0, 2026-11-21. Every memory in the accelerator and what it costs.
+v0.1, 2026-11-21. Every memory in the accelerator and what it costs.
 Unit costs are measured (synth_log.md, Nov 21). Bank sizes are for d = 128, 4 heads,
 MLP 256, 16-bit activations (N11), and are estimates until Matthew freezes the model.
 Each bank gets one line; replace "est" with a synthesis number as each bank is built.
@@ -33,7 +33,7 @@ Rules that follow: BRAM and URAM cost is set by width (about 1 BRAM36 per 72 bit
 | g | GAB bias, one head | 16 | 1,024 | 64 | 1 | LUTRAM | ~1.2K LUT | est |
 | o | attention / branch output | 16 | 1,024 | 128 | 1 | LUTRAM | ~2.9K LUT | est |
 | h | MLP hidden | 16 | 1,024 | 256 | 1 | BRAM | 14.5 BRAM36 | measured config |
-| weights | all weights, INT8 | 8 | 64 | ~200K | 1 | URAM | ~49 URAM | est, weight_mem next |
+| weights | all weights, INT8 | 8 | 64 | 200K | 1 | URAM | 49 URAM + 360 LUT | measured (weight_mem, Nov 21) |
 | exp ROM | softmax table | 16 | 16 | 512-1,024 | 2 | BRAM | 0.5-1 BRAM36 | est |
 
 ## Totals (v0, mostly estimates)
@@ -42,7 +42,7 @@ Rules that follow: BRAM and URAM cost is set by width (about 1 BRAM36 per 72 bit
 | --- | --- | --- | --- |
 | LUTRAM | ~29K LUTs | 57,600 LUTs usable as memory | ~50% |
 | BRAM36 | ~23 | 144 | ~16% |
-| URAM | ~49 | 64 | ~77% |
+| URAM | 49 (measured) | 64 | 77% |
 
 ## Open
 

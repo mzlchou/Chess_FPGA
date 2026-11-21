@@ -21,6 +21,10 @@ uncommitted `use_dsp` / `keep` change that was committed right after.
 | 2026-11-21 | d9ed9ff+mem_bank | `mem_bank` | 1024 b x 512, 2 rd, BRAM | 1 | 0 | 4 | 0 | 29 | 0 | +9.711 | Replicated for the 2nd read port (28 RAMB36 + 2 RAMB18) |
 | 2026-11-21 | d9ed9ff+mem_bank | `mem_bank` | 1024 b x 128, 1 rd, URAM | 1 | 0 | 2 | 0 | 0 | 15 | +9.711 | Synth 8-6057: no extra URAM pipeline registers (fine at 1 URAM deep) |
 | 2026-11-21 | d9ed9ff+mem_bank | `mem_bank` | 1024 b x 4096, 1 rd, URAM | 1 | 0 | 2 | 0 | 0 | 15 | +9.711 | Same 15 URAM as 128 deep: width sets the cost |
+| 2026-11-21 | d9ed9ff+weight_mem | `weight_mem` | 200K words x 64 b, RD_LAT 4, URAM | 360 | 40 | 115 | 0 | 0 | 49 | +4.846 | 49 URAM288 as 8x7 cascade matrix; FF absorbed 0 (read stages became SRL16) |
+| 2026-11-21 | d9ed9ff+weight_mem | `weight_mem` | 200K words x 64 b, RD_LAT 6, URAM | 360 | 40 | 123 | 0 | 0 | 49 | +4.846 | Extra latency did not help: stages not absorbed into the cascade |
+| 2026-11-21 | d9ed9ff+weight_mem | `weight_mem` | 4K words x 64 b, RD_LAT 4, URAM | 152 | 40 | 103 | 0 | 0 | 1 | +7.816 | Synth 8-7052: no output register merged into the URAM |
+| 2026-11-21 | 7a99707+weight_mem | `weight_mem` | 200K words x 64 b, RD_LAT 4, URAM | 294 | 40 | 247 | 0 | 0 | 49 | +7.262 | After the mem_bank pipeline fix: 3 of 3 stages absorbed into the URAM cascade; Vivado recommends 7 (RD_LAT 8) |
 
 ## Findings
 
@@ -31,3 +35,6 @@ uncommitted `use_dsp` / `keep` change that was committed right after.
   special-function units. COLS stays at 8.
 - mem_bank: a 1,024-bit bank costs 14.5 BRAM36 (any depth to 512) or 15 URAM (any depth to 4,096),
   and a second read port doubles it. LUTRAM scales with depth: ~1.2K LUTs at 64 deep, 1 read port.
+- weight_mem: all ~1.6M INT8 weights (200K x 64-bit words) fit in 49 of 64 URAM (77%).
+  Read stages first became SRL16s (WNS +4.8 ns). With each mem_bank stage enabled by its own valid,
+  Vivado absorbs them into the URAM cascade: WNS +7.3 ns. RD_LAT 8 gives the 7 stages Vivado recommends.
