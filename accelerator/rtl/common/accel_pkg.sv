@@ -35,6 +35,12 @@ package accel_pkg;
   localparam int RD_LAT = 2;      // memory read latency, in clock cycles (read latency is how many cycles it takes to get data back from memory after you ask for it)
   localparam int AXIS_W = 64;     // DMA stream width, in bits (axi stream width is how many bits the DMA sends in one beat)
 
+  // mme operand modes (command field)
+  localparam logic [1:0] MODE_AXW     = 2'd0;  // activation x weight: projections, MLP, heads
+  localparam logic [1:0] MODE_AXA_QK  = 2'd1;  // activation x activation: Q.K^T, column j = lane j of a K word
+  localparam logic [1:0] MODE_AXA_AV  = 2'd2;  // activation x activation: A.V, V banked COLS ways (not built yet)
+  localparam logic [1:0] MODE_GAB_MIX = 2'd3;  // GAB template mix (not built yet)
+
   // Derived from the above. 
   localparam int ACT_WORD_W     = LANES * DW;           // 512: bits in one act_buf word (activation word width )
   localparam int BEATS_PER_WORD = ACT_WORD_W / AXIS_W;  // 8: DMA beats per act_buf word (how many DMA beats are needed to transfer one activation word)

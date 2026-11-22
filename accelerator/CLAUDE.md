@@ -103,8 +103,8 @@ Hoang owns this table. It is copied here so every session starts from the same p
 - **Feature-major memory.** One word = one feature for all 64 squares; lane i is square i. A
   matmul walks down feature words. Nothing is transposed in hardware.
 - **Single vectors live on lane 0** (GAB generator, value head). Other lanes must stay defined.
-- **Four operand modes:** `STATIC` (activation word x weight word), `DYN_ROW` (QK^T and the
-  policy dot), `DYN_BANKED` (A.V, with V in COLS banks), `GAB_MIX` (template word x one scalar).
+- **Four operand modes:** `AXW` (activation word x weight word), `AXA_QK` (QK^T and the
+  policy dot), `AXA_AV` (A.V, with V in COLS banks), `GAB_MIX` (template word x one scalar).
 - **The drain.** After each pass `mme` emits one column of 64 accumulators per beat. A 64-lane
   adder there adds a bias or the aligned GAB bias, and a per-lane register tracks the row
   maximum. Wide values exist only on this stream and in one score bank.

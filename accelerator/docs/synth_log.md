@@ -25,6 +25,7 @@ uncommitted `use_dsp` / `keep` change that was committed right after.
 | 2026-11-21 | d9ed9ff+weight_mem | `weight_mem` | 200K words x 64 b, RD_LAT 6, URAM | 360 | 40 | 123 | 0 | 0 | 49 | +4.846 | Extra latency did not help: stages not absorbed into the cascade |
 | 2026-11-21 | d9ed9ff+weight_mem | `weight_mem` | 4K words x 64 b, RD_LAT 4, URAM | 152 | 40 | 103 | 0 | 0 | 1 | +7.816 | Synth 8-7052: no output register merged into the URAM |
 | 2026-11-21 | 7a99707+weight_mem | `weight_mem` | 200K words x 64 b, RD_LAT 4, URAM | 294 | 40 | 247 | 0 | 0 | 49 | +7.262 | After the mem_bank pipeline fix: 3 of 3 stages absorbed into the URAM cascade; Vivado recommends 7 (RD_LAT 8) |
+| 2026-11-22 | 735d0a9+mme | `mme` | 64 x 8, 17/16/40, A_LAT 2, P_LAT 2 (defaults) | 15,002 | 0 | 9,107 | 512 | 0 | 0 | +6.805 | Memories are outside mme. Worst path is control (col0 -> last_pass -> d_last), not the drain datapath |
 
 ## Findings
 
@@ -38,3 +39,6 @@ uncommitted `use_dsp` / `keep` change that was committed right after.
 - weight_mem: all ~1.6M INT8 weights (200K x 64-bit words) fit in 49 of 64 URAM (77%).
   Read stages first became SRL16s (WNS +4.8 ns). With each mem_bank stage enabled by its own valid,
   Vivado absorbs them into the URAM cascade: WNS +7.3 ns. RD_LAT 8 gives the 7 stages Vivado recommends.
+- mme: about 14.5K LUTs and 5K FFs on top of the array (12.8% of LUTs in total). Most of it is the
+  64 x 40-bit drain: 8:1 column mux, bias adder, row-max compare, d_data and row_max registers.
+  Still one DSP per pe, and 6.8 ns of slack.
