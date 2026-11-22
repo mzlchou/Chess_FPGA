@@ -18,6 +18,7 @@
 // come once, after the last beat, and row_max must be the max of every beat.
 // A reset in the middle of a command throws that command away; the memories
 // keep their contents and the next commands must still be right.
+// NEEDS TO BE RUN WITH --O0 IN XSIM OR CRASHES
 // =============================================================================
 `timescale 1ns / 1ps
 
