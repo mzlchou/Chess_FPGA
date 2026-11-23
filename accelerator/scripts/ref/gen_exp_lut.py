@@ -13,7 +13,7 @@ from pathlib import Path
 LUT_ENTRY_COUNT = 1024
 SCALE = 1.0 / 64.0
 
-# Define the output .mem file logistics
+# Define the output .mem file logistics TODO: CHANGE DIRECTORY PATH
 output_dir = Path(__file__).resolve().parent.parent / "rtl" / "sfu"
 output_dir.mkdir(parents=True, exist_ok=True)
 mem_file = output_dir / "exp_lut.mem"
