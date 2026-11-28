@@ -1,0 +1,517 @@
+% Every dimension and part for the chess robot, in one place.
+% Build with:  tectonic dimensions.tex
+% The numbers come from robotics/cad/src/lib/dims.py. If you change one there,
+% change it here too.
+
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.85in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{muted}{HTML}{555555}
+% needspace keeps a heading on the same page as the table under it
+\titleformat{\section}{\needspace{14\baselineskip}\large\bfseries\color{accent}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\needspace{10\baselineskip}\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.5em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.3em}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist{nosep, leftmargin=1.4em}
+\renewcommand{\arraystretch}{1.15}
+
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcommand{\mm}{\,mm}
+\newcommand{\todo}[1]{\textcolor{red!70!black}{\textbf{To decide:} #1}}
+\newcommand{\file}[1]{\texttt{#1}}
+
+\title{\color{accent}\textbf{Chess robot: dimensions and parts}}
+\author{Robotics subsystem, Tufts senior design}
+\date{November 27, 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.5em}
+
+\begin{center}
+\begin{minipage}{0.9\textwidth}
+\small\color{muted}
+All sizes are in millimeters. The CAD reads its numbers from \file{robotics/cad/src/lib/dims.py},
+so that file wins if it ever disagrees with this one. Anything in \textcolor{red!70!black}{\textbf{red}}
+hasn't been designed or bought yet.
+\end{minipage}
+\end{center}
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+% ---------------------------------------------------------------------------
+\section{How to read the numbers}
+
+There are two reference planes.
+\begin{itemize}
+  \item \textbf{Pieces:} $z = 0$ is the \emph{contact plane}, the bottom of the brass washer and the
+        bolt head. The plastic starts 0.3\mm{} higher, so only metal touches the board.
+  \item \textbf{Claw:} $z = 0$ is the \emph{seat plane}, where the top of a piece's cap cone sits
+        while the piece hangs in the claw. Negative $z$ is below it, toward the board.
+  \item \textbf{Gantry:} \emph{board coordinates}. $x = y = 0$ is the center of the board and $z = 0$
+        is the top of the pads. $x$ runs along the runways.
+\end{itemize}
+``r'' means radius and ``\O'' means diameter.
+
+% ---------------------------------------------------------------------------
+\section{Board}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Item & Size & Notes \\
+\midrule
+Square & 50 & FIDE allows 50--65. The smallest size keeps the gantry small \\
+Playing area & 400 $\times$ 400 & 8 squares of 50 \\
+Border & 25 & On every side \\
+Whole board & 450 $\times$ 450 & Too big for one print. Printed tiles or a laser-cut plate, to be decided after the 2$\times$2 test \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Contact pads on each square}
+
+Each square gets two copper tape pads. With these sizes a piece can sit up to 3\mm{} off
+center in any direction and still read correctly without shorting. (It was 4\mm{} with the
+bigger M12 washer. The M10 washer's smaller hole costs the millimeter.)
+\file{checks/fit\_check.py} checks this.
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Pad & Size & What it touches \\
+\midrule
+Center dot & r 1.5 (\O{} 3.0) & The M3 bolt head \\
+Outer ring & r 6.5 to 13.0 (\O{} 13 to 26) & The M10 brass washer \\
+Placement tolerance & $\pm$3.0 & How far off center a piece can be \\
+\bottomrule
+\end{tabularx}
+
+Worst-case margins at 3\mm{} off center: center dot to washer 0.75, ring to bolt head 0.5,
+ring still on the washer by 0.5, center dot still on the bolt head by 1.25. The ring needs copper
+tape at least 26\mm{} wide, or two strips side by side.
+
+\subsection{2$\times$2 test tile (\file{board/tile\_2x2})}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Feature & Size & Notes \\
+\midrule
+Footprint & 100 $\times$ 100 & Four 50\mm{} squares \\
+Top plate & 4 thick & The pad surface is the top of this plate \\
+Rails underneath & 4 wide, 6 tall & Room for wiring under the plate \\
+Total height & 10 & \\
+Engraved guide lines & 0.6 wide, 0.4 deep & Square borders and the three pad circles, for cutting the tape \\
+Wire holes & \O{} 1.6 & Two per square: one at the center, one 11.75 from center (just outside the steel washer) \\
+Steel washer pocket & \O{} 20.3, from underneath & Stops 1.0 below the pads. Glue an M10 steel washer into each one \\
+\bottomrule
+\end{tabularx}
+
+Print the tile upside down so the pad side is on the bed and comes out flat. The washer pockets
+then face up and need no supports.
+
+% ---------------------------------------------------------------------------
+\section{Pieces}
+
+Heights are the FIDE tournament set scaled by 0.88 (our 50\mm{} squares vs.\ their 57).
+The king's base is 41\% of its height, and FIDE asks for 40--50\%.
+
+\begin{tabularx}{\textwidth}{l c c c L}
+\toprule
+Piece & Height & Base \O & Plastic at 100\% infill & Notes \\
+\midrule
+Pawn   & 45 & 28 & $\approx$12\,g & \\
+Rook   & 50 & 30 & $\approx$16\,g & \\
+Knight & 55 & 30 & $\approx$17\,g & 12\mm{} thick head profile \\
+Bishop & 62 & 30 & $\approx$16\,g & \\
+Queen  & 75 & 33 & $\approx$21\,g & \\
+King   & 83 & 34 & $\approx$25\,g & Cross is on the front, since the top is the grab point \\
+\bottomrule
+\end{tabularx}
+
+The washer, bolt, nut and two magnets add about 7\,g to every piece, so the heaviest piece (the king) is about 32\,g.
+
+\subsection{Body sections shared by every piece}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Section & Size & Notes \\
+\midrule
+Gap under the plastic & 0.3 & The metal sticks out this far below the plastic \\
+Foot & 7 tall, base \O{} & 0.6 chamfer at the bottom (no first-layer squish), 1.0 at the top. Tall enough to wrap around the magnets \\
+Stem & r 9, starts at $z = 16$ & The foot tapers into this \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Mushroom head (identical on every piece)}
+
+This is the only part of a piece the claw ever touches. With $H$ = piece height:
+
+\begin{tabularx}{\textwidth}{l l l L}
+\toprule
+Part & Size & From $z$ to $z$ & Notes \\
+\midrule
+Cap flat top & r 12 (\O{} 24), 2 tall & $H-2$ to $H$ & \\
+Cap cone & r 12 down to r 5, 7 tall & $H-9$ to $H-2$ & 45\textdegree, prints without support. Seats in the jaws \\
+Neck & r 5, 5 tall & $H-14$ to $H-9$ & The jaws close here. Nothing on the body may go past r 5 in this band \\
+Whole head & 14 tall & $H-14$ to $H$ & \\
+\bottomrule
+\end{tabularx}
+
+% ---------------------------------------------------------------------------
+\section{Piece contacts and hardware}
+
+\subsection{Bought parts, per piece}
+
+\begin{tabularx}{\textwidth}{c L l L}
+\toprule
+Qty & Part & Size & Job \\
+\midrule
+1 & M10 brass flat washer (McMaster 98691A118) & OD 20, ID 10.5, 2 thick & Outer contact. Measure one, these are the standard sizes \\
+1 & M3 hex-head bolt (McMaster 91280A104) & Head 5.5 flats, 2 tall & Center contact. The flat top of the head faces down \\
+1 & M3 hex nut & 5.5 flats, 2.4 thick & Clamps one resistor lead to the bolt \\
+2 & Disc magnet, KJ Magnetics D52 & \O{} 7.94 $\times$ 3.175 & 5/16'' $\times$ 1/8''. Pulls the piece down onto its pads \\
+1 & Resistor, 1/4\,W, 1\% metal film & $\approx$6.3 $\times$ 2.4 body & Tells the board which piece it is (table below) \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Pockets and the contact plug}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Feature & Size & Notes \\
+\midrule
+Washer pocket & \O{} 20.3, 2.0 deep & 0.3 of slip on the diameter (\texttt{FIT\_SLIP}) \\
+Contact plug (printed) & \O{} 10.2 $\times$ 2.0 & Sits in the washer hole and insulates the bolt from the washer \\
+Plug flange & 16 $\times$ 5.5 bar, 0.9 thick & Sits on top of the washer. A bar, not a disc, so the magnets fit beside it \\
+Flange pocket & 16.3 $\times$ 5.8, 1.0 deep & \\
+Bolt head pocket in plug & Hexagon, 5.8 across flats, 2.0 deep & The head sits flush with the bottom of the plug \\
+Nut pocket & 6.65 $\times$ 5.8 box & Tight on the flats, so the nut can't spin while you tighten the bolt \\
+Magnet pockets & \O{} 8.24 $\times$ 3.4, at $y = \pm$7.82 & Closed. 0.45 of plastic under them, 0.6 over them \\
+Resistor cavity & \O{} 12, 10 tall, starts at $z = 6.4$ & 45\textdegree{} cone roof, no supports \\
+Lead slot & 1.6 wide, out to r 9.6 & One resistor lead comes down here and gets soldered to the washer \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Magnets}
+
+Brass isn't magnetic, so the magnets go in the pieces and grab a steel washer buried under each
+square. The steel washer is centered on the square, so it also pulls a piece toward the middle.
+There's 3.45\mm{} of plastic and air between the magnets and the steel. \file{checks/fit\_check.py}
+checks that every magnet pocket has at least 0.8\mm{} of wall around it.
+
+\begin{itemize}
+  \item \textbf{Putting them in:} the pockets are closed, so add a print pause in PrusaSlicer at the
+        first layer that covers them, about 5.5\mm{} up from the bed (right-click the \textbf{+} on the
+        layer slider, then \emph{Add pause print}). When the printer stops, drop in two magnets and resume.
+  \item \textbf{Which way up} doesn't matter, since they're pulling on plain steel.
+  \item \textbf{Too strong or too weak?} Test a few pieces on the 2$\times$2 tile first. To weaken the
+        pull, raise \texttt{TARGET\_SKIN} in \file{dims.py}. To strengthen it, lower it (0.6 at least).
+  \item \textbf{The D62 magnets} (3/8'') are too wide for the pawn. Keep them for pull tests.
+\end{itemize}
+
+\subsection{Resistor values}
+
+The divider is 3.3\,V $\rightarrow$ piece resistor $\rightarrow$ sense node $\rightarrow$ 10\,k$\Omega$ to ground.
+The 12 levels are about 0.25\,V apart. Even with both resistors off by a full 1\%, neighboring
+levels stay at least 0.18\,V apart.
+
+\begin{tabularx}{\textwidth}{c l c c L}
+\toprule
+Level & Piece & Resistor (E24, 1\%) & Expected voltage & Count for one set \\
+\midrule
+0  & Empty square & none   & 0.000\,V & \\
+1  & White pawn   & 120\,k & 0.254\,V & 8 \\
+2  & White knight & 56\,k  & 0.500\,V & 2 \\
+3  & White bishop & 33\,k  & 0.767\,V & 2 \\
+4  & White rook   & 22\,k  & 1.031\,V & 2 \\
+5  & White queen  & 16\,k  & 1.269\,V & 2 (1 + spare for promotion) \\
+6  & White king   & 12\,k  & 1.500\,V & 1 \\
+7  & Black pawn   & 8.2\,k & 1.813\,V & 8 \\
+8  & Black knight & 6.2\,k & 2.037\,V & 2 \\
+9  & Black bishop & 4.3\,k & 2.308\,V & 2 \\
+10 & Black rook   & 3.0\,k & 2.538\,V & 2 \\
+11 & Black queen  & 1.8\,k & 2.797\,V & 2 (1 + spare for promotion) \\
+12 & Black king   & 820    & 3.050\,V & 1 \\
+\bottomrule
+\end{tabularx}
+
+That's 34 pieces in all: 32 for the game plus a spare queen for each color.
+
+% ---------------------------------------------------------------------------
+\section{Claw}
+
+One servo turns a pinion. The pinion drives two racks, one on each jaw, so the jaws slide
+apart or together along X. The jaws close to a fixed spot under the cap and never squeeze.
+When the claw lifts, the cap cone drops into the countersink in the jaw lips and the piece
+centers itself. When the claw opens, the piece drops off.
+
+\subsection{Printed parts}
+
+\begin{tabularx}{\textwidth}{c l l L}
+\toprule
+Qty & File & Overall size & Print orientation \\
+\midrule
+2 & \file{STL/claw/jaw.stl}     & 37.0 $\times$ 27.1 $\times$ 20.0 & Upside down, flat top of the rack on the bed \\
+1 & \file{STL/claw/pinion.stl}  & \O{} 27.5 $\times$ 6.0 & Flat side down, hub recess facing up \\
+1 & \file{STL/claw/housing.stl} & 30.0 $\times$ 44.7 $\times$ 14.8 & Upside down, servo-tab face on the bed \\
+\bottomrule
+\end{tabularx}
+
+The second jaw is the same part turned 180\textdegree.
+
+\subsection{Jaws}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Feature & Size & Notes \\
+\midrule
+Closed opening (seat) & r 9 & Neck r 5 plus 4 of slop, so closing never touches the neck \\
+Seat countersink & 45\textdegree, r 9 to r 12 & Matches the cap cone \\
+Lip & 5 thick, 12 wide & $z = -5$ to $0$ \\
+Finger & 4 thick, 16 wide & Inner face at $x = 17$, 5 outside the cap \\
+Stroke & 10 per jaw & Open jaws clear a cap that is 4 off center \\
+Closing height & 5 below seated & The claw closes 5 lower than where the piece ends up \\
+Grab tolerance & $\pm$4 & Verified in 8 directions by \file{checks/claw\_check.py} \\
+Open footprint & X $\pm$31, Y $\pm$22.4 & Misses a king pushed 4 toward the target on the next square \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Rack and pinion}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Feature & Size & Notes \\
+\midrule
+Gear module & 1.25 & 20\textdegree{} pressure angle, involute pinion, straight-sided rack \\
+Pinion teeth & 20 & \\
+Pinion pitch / tip / root \O & 25.0 / 27.5 / 21.875 & \\
+Backlash & 0.15 & Shaved off every tooth so printed gears don't bind \\
+Gear thickness & 6 & Rack and pinion both sit at $z = 9$ to $15$ \\
+Rack backing & 5 & Solid material behind the tooth roots \\
+Rack chamfer & 2.5 at 45\textdegree & Rides on a matching ledge in the housing \\
+Servo turn for full stroke & 45.8\textdegree & 10\mm{} / 12.5\mm{} pitch radius. That's 4.58\textdegree{} per mm \\
+Pinion bore & \O{} 5.0 through & Reach the horn screw from below \\
+Hub recess & \O{} 8.0, 1.5 deep & Fits the servo horn's hub \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Housing}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Feature & Size & Notes \\
+\midrule
+Rack guides & $x = -15$ to $15$, walls 3 thick & Run along both racks \\
+Sliding clearance & 0.3 & Between racks and guides. Raise it in \file{dims.py} if the jaws bind \\
+Horn swing clearance & r 17, 3 tall & Between the pinion and the servo \\
+Servo pocket & 12.7 $\times$ 23.3 & 0.25 of slip per side, shifted 5.5 in Y so the shaft is centered \\
+Servo screw pilot holes & \O{} 1.8, 6 deep, 27.8 apart & For the M2 screws that come with the servo \\
+Heat-set insert holes & 4 $\times$ \O{} 4.0, 5 deep, at ($\pm$11, $\pm$18) & M3 inserts, for bolting to the Z carriage \\
+\bottomrule
+\end{tabularx}
+
+Heights above the seat plane: jaw bottoms $-5$, rack bottoms 9, rack tops 15, housing bottom 15.3,
+servo face 18, housing top (servo tabs sit here) 22.3, servo top $\approx$40.7.
+
+\subsection{Bought parts for the claw}
+
+\begin{tabularx}{\textwidth}{c l L}
+\toprule
+Qty & Part & Notes \\
+\midrule
+1 & MG90S micro servo (metal gear) & Comes with horns and M2 screws \\
+4 & M3 heat-set inserts & \O{} 4.0 hole, 5 deep. Press in at about 220\,\textdegree C \\
+4 & M3 bolts & \todo{length depends on the Z carriage plate} \\
+\bottomrule
+\end{tabularx}
+
+% ---------------------------------------------------------------------------
+\section{Servo (MG90S): measure before printing the housing}
+
+These numbers came from the datasheet. Check your actual servo with calipers. If anything
+is off by more than a few tenths, change it in \file{dims.py} and rebuild the housing.
+
+\begin{tabularx}{\textwidth}{l c L}
+\toprule
+Dimension & Datasheet & Measured \\
+\midrule
+Case length & 22.8 & \\
+Case width & 12.2 & \\
+Case height (bottom to output face) & 22.7 & \\
+Shaft offset from case center & 5.5 & \\
+Output face to underside of tabs & 4.3 & \\
+Tab span (end to end) & 32.5 & \\
+Tab thickness & 2.5 & \\
+Tab width & 5.4 & \\
+Mounting hole spacing & 27.8 & \\
+\bottomrule
+\end{tabularx}
+
+% ---------------------------------------------------------------------------
+\section{Gantry and motors}
+
+It's a Cartesian gantry, basically a 3D printer with a claw instead of a nozzle. The frame is
+the aluminum extrusion we already have. Four 2525 posts stand at the corners, just outside the
+board. A printed corner block sits on each post, and the two 600\mm{} 3030 runways rest on the
+corner blocks, one along each side of the board. An MGN12 linear rail is bolted on top of each
+runway, and the 450\mm{} 3030 bridge sits on the two rail carriages, so it rolls along the board
+in X. A third rail on the side of the bridge carries the claw in Y. The models are in
+\file{cad/src/gantry/}, and \file{checks/gantry\_check.py} checks the travel and clearances.
+The step-by-step build is in \file{gantry-guide.pdf}.
+
+\subsection{Travel the gantry needs}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Axis & Range & Why \\
+\midrule
+X & $\pm$275 & Squares reach $\pm$175. Capture columns sit at $\pm$225 and $\pm$275, one side per color \\
+Y & $\pm$175 & Squares and capture slots (2 columns of 8 per side) \\
+Z (seat height) & 38 to 169 & Lowest: closing on a pawn ($45 - 2 - 5$). Highest: carrying a king over another king with 5 to spare \\
+Z travel & 131 & \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Frame (board coordinates)}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Part & Size and place & Notes \\
+\midrule
+Runways & 2 $\times$ 3030, 600 long & Centers at $y = \pm$210, bottom at $z = 230$, from $x = -360$ to 240. Used as is \\
+Bridge & 3030, 450 long & Bottom at $z = 279$. Its ends sit right over the runways. Used as is \\
+Posts & 4 $\times$ 2525, \textbf{cut to 231} & At $x = -344.3$ and 224.3, $y = \pm$242. All four the same length, square ends \\
+Corner blocks & Printed, 4 & The runway rests on a 6\mm{} saddle, the post goes 30\mm{} up into a sleeve \\
+Post feet & Printed, 4 & Screwed to the plywood base. The posts stand 4.5\mm{} outside the board \\
+Bridge brackets & Printed, 2 & Bolt to the X carriages, hold the bridge, and clamp the X belts \\
+Plywood base & About 720 $\times$ 605 & The board sits on it too. Board top ($z = 0$) is 10 above it \\
+Whole frame & 676 $\times$ 591, 319 tall & Not centered on the board in X: the motors stick out past the $-X$ end \\
+\bottomrule
+\end{tabularx}
+
+The claw hangs 60\mm{} in front of the bridge (\texttt{CLAW\_OFFSET\_X}), so the runways are shifted
+60 toward $-X$ to keep the claw's reach centered. \todo{60 is a guess until the Z carriage is designed.}
+
+\subsection{Rails and clearances}
+
+\begin{tabularx}{\textwidth}{l l L}
+\toprule
+Check & Value & Notes \\
+\midrule
+X rails & 2 $\times$ MGN12, 600, MGN12\textbf{C} carriage & The short C carriage gives 565 of travel. We need 550, so 7.6 to spare at each end \\
+Y rail & MGN12, 450, MGN12H carriage & 404 of travel, 27 to spare at each end \\
+Claw under the runways & Claw top at 216, runways at 230 & With a king hanging from the claw at its highest \\
+Claw beside the posts & 29 to spare & At the corner squares, jaws open \\
+Frame vs.\ board & 1.3 gap & Sleeves and feet stay outside the board, so it lifts straight out \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Motors and drive}
+
+\begin{tabularx}{\textwidth}{c l L}
+\toprule
+Qty & Part & Notes \\
+\midrule
+4 & NEMA 17, 42\,Ncm, 1.5\,A (17HE15-1504S) & Two for X (one per runway), one for Y, one for Z \\
+1 & BTT SKR Mini E3 V3 + Marlin & Four TMC2209 drivers. Both X motors share the X driver through a splitter cable \\
+2 & GT2 belt, 6 wide, about 1400 each & One loop per runway. \todo{Y belt length depends on the Y motor mount} \\
+3 & GT2 20-tooth pulley, 5\mm{} bore & 40\mm{} of belt per turn, so 80 steps/mm at 16 microsteps \\
+3 & GT2 toothless idler, 5\mm{} bore & Two for X, on an M5 bolt in the idler block's slot. One for Y \\
+1 & T8 lead screw, 8\mm{} lead & 400 steps/mm at 16 microsteps. Holds position with the power off \\
+3 & Limit switches & Home X to $-X$, Y to $-Y$, Z to the top. \todo{switch mounts aren't designed yet} \\
+1 & 24\,V power supply, 150\,W & \\
+\bottomrule
+\end{tabularx}
+
+The X belt runs in a loop just outside each runway: motor pulley at $x = -385$, idler at $x = 255$,
+both at $z = 262$. The top strand is clamped to the bridge bracket. The two X motors face opposite
+ways, so \textbf{one of them has to be wired backwards} or they'll twist the bridge. The guide
+covers this.
+
+\subsection{Frame hardware}
+
+\begin{tabularx}{\textwidth}{c l L}
+\toprule
+Qty & Part & Where \\
+\midrule
+8 & M6 $\times$ 12 + M6 tee nut (8\mm{} slot) & Corner block saddles up into the runways \\
+4 & M6 $\times$ 10 + M6 tee nut & Bridge bracket cheeks into the bridge \\
+12 & M5 $\times$ 10 + M5 tee nut (6\mm{} slot) & Corner block sleeves and post feet into the posts \\
+8 & M3 $\times$ 6 & Bridge brackets down into the X carriages \\
+8 & M3 $\times$ 10 & X motors to the corner blocks \\
+about 35 & M3 $\times$ 10 + M3 tee nut (8\mm{} slot) & MGN12 rails onto the extrusion, every other hole \\
+2 & M5 $\times$ 30 bolt, nut, washers & X idlers \\
+16 & \#8 $\times$ 3/4'' wood screws & Post feet into the base \\
+\bottomrule
+\end{tabularx}
+
+Check the slot widths on your extrusion first. The tee nut sizes above assume an 8\mm{} slot on
+the 3030 and a 6\mm{} slot on the 2525.
+
+\todo{the Y motor mount, the Y carriage and Z axis, and the limit switch mounts. The claw's
+placeholder in the assembly shows where they go.}
+
+% ---------------------------------------------------------------------------
+\section{Board sensing electronics}
+
+\begin{tabularx}{\textwidth}{c l L}
+\toprule
+Qty & Part & Notes \\
+\midrule
+64 & 10\,k$\Omega$ 1\% reference resistor & One per square, so the mux's own resistance stays out of the divider \\
+4 & CD74HC4067 16:1 analog mux & 64 squares into one ADC channel. A full scan takes about 1\,ms \\
+1 & ADC & \todo{which part. 10-bit is enough. 12-bit gives about 220 counts between levels} \\
+1 roll & Copper tape, at least 26 wide & For the pads on each square \\
+64 & M10 zinc-plated steel washer & Glued under each square for the piece magnets to grab \\
+& Hookup wire & Through the two wire holes on each square \\
+\bottomrule
+\end{tabularx}
+
+To decode a reading, snap it to the nearest level. If it's more than about 0.09\,V from every
+level, flag the square as unreadable and don't guess.
+
+% ---------------------------------------------------------------------------
+\section{Printing (Prusa MK4, PLA)}
+
+\begin{tabularx}{\textwidth}{l L}
+\toprule
+Setting & Value \\
+\midrule
+Printer profile & Original Prusa MK4 Input Shaper, 0.4 nozzle \\
+Filament & Generic PLA \\
+Print profile & 0.15\,mm QUALITY \\
+Perimeters & 4 \\
+Infill & 25\% gyroid \\
+Supports & None (every part was designed to print without them) \\
+Brim & Off unless a corner lifts \\
+Elephant foot compensation & Default (0.2). The sliding faces and the servo pocket are on the bed \\
+\bottomrule
+\end{tabularx}
+
+The whole claw (2 jaws, pinion, housing) fits on one plate. It's about 16\,cm$^3$ of plastic
+and roughly 1.5--2 hours of printing.
+
+\textbf{Pieces:} 100\% infill so they have some weight, standing up, with a print pause at about
+5.5\mm{} to drop in the magnets (see Magnets above). The contact plugs print flange side down.
+
+\textbf{Gantry parts:} 4 perimeters and 40\% infill, since they carry the frame. Each STL in
+\file{STL/gantry/} is already laid in its print orientation: the corner blocks on their outside face,
+the bridge brackets on their cheek, the post feet on their flange. The \file{plus\_y} and
+\file{minus\_y} versions are mirror images, so print one of each.
+
+\end{document}

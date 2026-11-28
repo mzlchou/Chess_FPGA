@@ -18,7 +18,7 @@ CAD_ROOT = pathlib.Path(__file__).resolve().parent
 SRC = CAD_ROOT / "src"
 
 # Each assembly builds any part it uses that is out of date, so the order here doesn't matter much.
-FOLDER_ORDER = ["pieces", "claw", "board"]
+FOLDER_ORDER = ["pieces", "claw", "board", "gantry"]
 
 
 def models_to_build(targets: list[str]) -> list[pathlib.Path]:

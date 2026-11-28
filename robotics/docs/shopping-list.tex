@@ -1,0 +1,162 @@
+% Shopping list for the chess robot. Build with:  tectonic shopping-list.tex
+% Sizes behind every part are in dimensions.tex.
+
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.8in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage[colorlinks=true, urlcolor=blue!70!black, linkcolor=black]{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+\titleformat{\section}{\needspace{10\baselineskip}\large\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+\renewcommand{\arraystretch}{1.2}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+% One row of a shopping table: quantity, part, store name, link
+\newcommand{\buy}[4]{#1 & #2 & \href{#4}{#3} \\}
+\newcommand{\dk}[1]{\href{https://www.digikey.com/en/products/result?keywords=MFR-25FBF52-#1}{DigiKey}}
+\newcommand{\have}[2]{#1 & #2 & \textcolor{green!45!black}{have it} \\}
+
+\begin{document}
+
+{\LARGE\bfseries Chess robot shopping list}\par
+\vspace{0.3em}
+{\color{gray}November 27, 2026. Click a store name to open the part.}
+
+Prices and stock weren't checked, so confirm the spec on each page before ordering. Links that
+say \emph{search} go to a search because there are lots of equivalent sellers; pick one with
+good reviews that matches the spec. \textcolor{green!45!black}{Green} rows are things we already
+have or have already ordered.
+
+\textbf{Budget:} the extrusion we found saves a big chunk of the frame cost, but bought new
+this is still over the \$100 robotics budget. A used or broken Ender-3-style printer has the
+motors, controller, belts, pulleys, lead screw, power supply and limit switches, so ask Nolop
+and Bray for one before buying the gantry parts.
+
+\section{Pieces (34 sets: 32 plus a spare queen per color)}
+
+\begin{tabularx}{\textwidth}{l L l}
+\toprule
+Qty & Part & Where \\
+\midrule
+\buy{34+}{M10 brass flat washer, 20 OD / 10.5 ID / 2 thick. \textbf{A 25-pack isn't enough for 34 pieces}, so get two}{McMaster}{https://www.mcmaster.com/98691A118/}
+\buy{100-pack}{M3 hex-head bolt}{McMaster}{https://www.mcmaster.com/91280A104/}
+\buy{100-pack}{M3 hex nuts}{Amazon}{https://www.amazon.com/100Pcs-Stainless-Coarse-Machine-Hardware/dp/B0G352WV29}
+\buy{70}{Disc magnet D52, 5/16'' $\times$ 1/8'' (2 per piece, plus 2 spare). Test the 5 on order first}{KJ Magnetics}{https://www.kjmagnetics.com/d52-neodymium-disc-magnet}
+\have{5}{Disc magnet D62, 3/8'' $\times$ 1/8'', for pull tests only. Too wide for the pawn}
+\bottomrule
+\end{tabularx}
+
+The M2.5 brass washers on our order aren't used anywhere in the CAD. Their hole is too small for
+the M3 bolt.
+
+\section{Resistors (Yageo MFR-25, 1\%, 1/4 W)}
+
+\begin{tabularx}{\textwidth}{l l L l}
+\toprule
+Qty & Value & Used for & Where \\
+\midrule
+10  & 120\,k & White pawns  & \dk{120K} \\
+4   & 56\,k  & White knights & \dk{56K} \\
+4   & 33\,k  & White bishops & \dk{33K} \\
+4   & 22\,k  & White rooks   & \dk{22K} \\
+4   & 16\,k  & White queens  & \dk{16K} \\
+3   & 12\,k  & White king    & \dk{12K} \\
+10  & 8.2\,k & Black pawns   & \dk{8K2} \\
+4   & 6.2\,k & Black knights & \dk{6K2} \\
+4   & 4.3\,k & Black bishops & \dk{4K3} \\
+4   & 3.0\,k & Black rooks   & \dk{3K} \\
+4   & 1.8\,k & Black queens  & \dk{1K8} \\
+3   & 820    & Black king    & \dk{820R} \\
+100 & 10\,k  & Board reference, one per square (64 needed) & \dk{10K} \\
+\bottomrule
+\end{tabularx}
+
+Each count includes a spare or two.
+
+\section{Board}
+
+\begin{tabularx}{\textwidth}{l L l}
+\toprule
+Qty & Part & Where \\
+\midrule
+\buy{100-pack}{M10 zinc-plated \textbf{steel} flat washer, DIN 125, 20 OD / 10.5 ID / 2 thick. One glued under each square for the magnets to grab (64 needed)}{Amazon (search)}{https://www.amazon.com/s?k=M10+zinc+plated+steel+flat+washer+DIN+125}
+\buy{1 roll}{Copper tape, at least 26 mm wide, conductive adhesive}{Adafruit}{https://www.adafruit.com/product/1127}
+\buy{1 set}{22 AWG solid hookup wire}{Adafruit}{https://www.adafruit.com/product/1311}
+\bottomrule
+\end{tabularx}
+
+\section{Claw}
+
+\begin{tabularx}{\textwidth}{l L l}
+\toprule
+Qty & Part & Where \\
+\midrule
+\buy{1}{MG90S metal gear servo}{Adafruit}{https://www.adafruit.com/product/1143}
+\buy{100-pack}{M3 $\times$ 3 \textbf{short} heat-set inserts (the 5.7 mm ones are too long)}{CNC Kitchen}{https://cnckitchen.store/products/heat-set-insert-m3-x-3-short-version-100-pieces}
+\bottomrule
+\end{tabularx}
+
+\section{Board sensing and controls}
+
+\begin{tabularx}{\textwidth}{l L l}
+\toprule
+Qty & Part & Where \\
+\midrule
+\buy{4}{CD74HC4067 16:1 mux breakout (change this if we go with 8:1 muxes)}{SparkFun}{https://www.sparkfun.com/sparkfun-analog-digital-mux-breakout-cd74hc4067.html}
+\buy{1}{MCP3008 10-bit SPI ADC}{Adafruit}{https://www.adafruit.com/product/856}
+\buy{1}{Emergency stop, 22 mm, latching, normally closed}{Amazon}{https://www.amazon.com/Uxcell-a14122300ux0109-Emergency-Latching-Mushroo/dp/B00W947PS0}
+\buy{1}{Turn button, 30 mm arcade}{Adafruit}{https://www.adafruit.com/product/471}
+\bottomrule
+\end{tabularx}
+
+\section{Gantry motion}
+
+\begin{tabularx}{\textwidth}{l L l}
+\toprule
+Qty & Part & Where \\
+\midrule
+\buy{2}{MGN12 linear rail, \textbf{600 mm}, with an \textbf{MGN12C} (short) carriage. The H carriage is too long for the travel we need}{Amazon (search)}{https://www.amazon.com/s?k=MGN12+600mm+linear+rail+MGN12C}
+\buy{1}{MGN12 linear rail, \textbf{450 mm}, with an MGN12H carriage}{Amazon (search)}{https://www.amazon.com/s?k=MGN12+450mm+linear+rail+MGN12H}
+\buy{1}{BTT SKR Mini E3 V3 controller, 4 stepper drivers built in}{BIQU}{https://biqu.equipment/collections/control-board/products/bigtreetech-skr-mini-e3-v2-0-32-bit-control-board-for-ender-3}
+\buy{5-pack}{NEMA 17 stepper, 42 Ncm, 1.5 A (4 needed: two X, Y, Z)}{StepperOnline}{https://www.omc-stepperonline.com/5pcs-e-series-nema-17-bipolar-42ncm-59-49oz-in-1-5a-42x42x38mm-4-wires-w-1m-cable-connector-5-17he15-1504s}
+\buy{1}{Dual motor splitter cable, XH2.54 4-pin (sold for Ender-3 dual Z). Runs both X motors off one driver}{Amazon (search)}{https://www.amazon.com/s?k=dual+z+axis+stepper+motor+splitter+cable+XH2.54}
+\buy{1}{24 V 6.5 A power supply, Mean Well LRS-150-24}{Mouser}{https://www.mouser.com/ProductDetail/MEAN-WELL/LRS-150-24?qs=vDxCgdWo2h\%2Bym5KOpEI\%2Bpw\%3D\%3D}
+\buy{15 ft}{GT2-2M belt, 6 mm (two X belts are about 1.4 m each)}{OpenBuilds}{https://openbuildspartstore.com/gt2-2m-timing-belt-by-the-foot/}
+\buy{3}{GT2 20-tooth pulley, 5 mm bore}{OpenBuilds}{https://openbuildspartstore.com/gt2-2m-timing-pulley-20-tooth/}
+\buy{10-pack}{GT2 toothless idler, 5 mm bore}{Amazon}{https://www.amazon.com/BZ-3D-Pulley-Toothless-Printer/dp/B0FX5J74KJ}
+\buy{1}{T8 lead screw, 8 mm lead, 290 mm}{OpenBuilds}{https://openbuildspartstore.com/8mm-metric-acme-lead-screw/}
+\buy{1}{Anti-backlash nut block for the lead screw}{OpenBuilds}{https://openbuildspartstore.com/anti-backlash-nut-block-for-8mm-metric-acme-lead-screw/}
+\buy{1}{5 mm to 8 mm flexible coupler}{OpenBuilds}{https://openbuildspartstore.com/5mm-8mm-flexible-coupling/}
+\buy{1 kit}{Two 8 mm $\times$ 300 rods, 4 LM8UU bearings, 4 supports (Z axis)}{Amazon}{https://www.amazon.com/FBT-diameter-Hardened-support-Bearing/dp/B01CJGO8XM}
+\buy{3}{Limit switch kit, one per axis}{OpenBuilds}{https://openbuildspartstore.com/xtension-limit-switch-kit/}
+\bottomrule
+\end{tabularx}
+
+\section{Frame}
+
+\begin{tabularx}{\textwidth}{l L l}
+\toprule
+Qty & Part & Where \\
+\midrule
+\have{2 + 2}{3030 extrusion, 600 mm (runways) and 450 mm (bridge, plus a spare)}
+\have{4}{2525 extrusion, 300--350 mm, cut to 231 for the posts}
+\buy{20}{M6 tee nuts for an \textbf{8 mm} slot (check the 3030 slot first)}{Amazon (search)}{https://www.amazon.com/s?k=M6+T+nut+3030+8mm+slot}
+\buy{20}{M5 tee nuts for a \textbf{6 mm} slot (check the 2525 slot first)}{Amazon (search)}{https://www.amazon.com/s?k=M5+T+nut+2525+6mm+slot}
+\buy{50}{M3 tee nuts for an 8 mm slot, for bolting the rails down}{Amazon (search)}{https://www.amazon.com/s?k=M3+T+nut+3030+8mm+slot}
+\buy{1 kit}{Metric socket head screw assortment with M3, M5 and M6 (we need M3 $\times$ 6 and 10, M5 $\times$ 10 and 30, M6 $\times$ 10 and 12)}{Amazon (search)}{https://www.amazon.com/s?k=metric+socket+head+cap+screw+assortment+M3+M5+M6}
+\buy{16}{\#8 $\times$ 3/4'' wood screws, for the post feet}{Hardware store}{https://www.amazon.com/s?k=8+x+3/4+wood+screws}
+\bottomrule
+\end{tabularx}
+
+Laser-cut or saw the plywood base (about 720 $\times$ 605 mm, 12 mm thick) at the makerspace.
+
+\end{document}

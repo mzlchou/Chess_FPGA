@@ -1,4 +1,8 @@
-"""The bishop. Print it standing up at 100% infill so it has some weight to it."""
+"""The bishop. Print it standing up at 100% infill so it has some weight to it.
+
+Add a print pause at the first layer that covers the magnet pockets (about 5.5 mm
+up from the bed) and drop in the two magnets. See docs/dimensions.pdf.
+"""
 
 from cadgen import step, stl
 

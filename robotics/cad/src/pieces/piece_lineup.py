@@ -1,4 +1,4 @@
-"""All six pieces in a row, one per square, with their washers, screws and nuts.
+"""All six pieces in a row, one per square, with their washers, bolts, nuts and magnets.
 
 This one isn't printed. It's for looking at the whole set in the viewer.
 """
@@ -8,7 +8,7 @@ from cadgen import build123d as bd
 from cadgen import srgb
 
 from lib import dims
-from lib.pieces import center_nut, center_screw, contact_washer
+from lib.pieces import center_nut, center_screw, contact_washer, piece_magnets
 from pieces.bishop import bishop
 from pieces.contact_plug import contact_plug
 from pieces.king import king
@@ -22,6 +22,8 @@ PIECES_IN_ORDER = [("pawn", pawn), ("rook", rook), ("knight", knight), ("bishop"
 PLASTIC = srgb("#E8DCC4")
 PLUG = srgb("#2E3742")
 STEEL = srgb("#9AA3AD")
+BRASS = srgb("#C9A54A")
+MAGNET = srgb("#5A6470")
 
 
 @step(out="../../STEP/pieces/piece_lineup.step")
@@ -32,9 +34,13 @@ def piece_lineup():
         body.color = PLASTIC
         plug = contact_plug()
         plug.color = PLUG
-        hardware = [contact_washer(), center_screw(), center_nut()]
-        for part in hardware:
-            part.color = STEEL
+        washer = contact_washer()
+        washer.color = BRASS
+        magnets = piece_magnets()
+        magnets.color = MAGNET
+        bolt, nut = center_screw(), center_nut()
+        bolt.color = nut.color = STEEL
+        hardware = [washer, bolt, nut, magnets]
 
         piece = bd.Compound(children=[body, plug, *hardware], label=name)
         row.append(bd.Pos(square * dims.SQUARE, 0, 0) * piece)

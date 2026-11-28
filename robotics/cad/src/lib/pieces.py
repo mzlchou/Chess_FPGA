@@ -4,7 +4,7 @@ Every piece is built from the same three chunks stacked on top of each other:
 
     head   the mushroom cap the claw grabs (identical on every piece)
     middle the part that makes it look like a rook, a knight, and so on
-    foot   the round base that holds the washer, screw and resistor
+    foot   the round base that holds the washer, bolt, magnets and resistor
 
 Each piece is built standing up with z = 0 at the contact plane (see dims.py).
 """
@@ -62,23 +62,51 @@ def head(piece_height: float) -> bd.Shape:
     )
 
 
+# Heights inside the foot, from the bottom up. The brass washer sits from 0 to
+# WASHER_THICKNESS, the plug's flange and the nut sit on top of it, and the two
+# magnets sit on either side of the nut.
+WASHER_TOP = dims.WASHER_THICKNESS
+FLANGE_TOP = WASHER_TOP + dims.FLANGE_POCKET_DEPTH
+NUT_BOTTOM = WASHER_TOP + dims.PLUG_FLANGE_THICKNESS
+MAGNET_BOTTOM = WASHER_TOP + dims.MAGNET_FLOOR
+MAGNET_POCKET_TOP = MAGNET_BOTTOM + dims.PIECE_MAGNET_THICKNESS + 0.2
+CAVITY_BOTTOM = MAGNET_POCKET_TOP + dims.MAGNET_ROOF
+CAVITY_TOP = CAVITY_BOTTOM + dims.RESISTOR_CAVITY_HEIGHT
+
+# The nut pocket is a tight box so the nut can't spin while you tighten the bolt.
+NUT_POCKET_HALF_X = (dims.M3_NUT_CORNERS + dims.FIT_SLIP) / 2
+NUT_POCKET_HALF_Y = (dims.M3_NUT_FLATS + dims.FIT_SLIP) / 2
+MAGNET_POCKET_RADIUS = (dims.PIECE_MAGNET_DIA + dims.FIT_SLIP) / 2
+MAGNET_Y = NUT_POCKET_HALF_Y + dims.MAGNET_WALL + MAGNET_POCKET_RADIUS  # magnets sit at y = +-MAGNET_Y
+
+
+def magnet_pockets() -> bd.Shape:
+    """The two closed pockets the magnets go in. You drop them in during a print pause."""
+    pocket = cylinder(MAGNET_POCKET_RADIUS, MAGNET_BOTTOM, MAGNET_POCKET_TOP)
+    return bd.Pos(0, MAGNET_Y, 0) * pocket + bd.Pos(0, -MAGNET_Y, 0) * pocket
+
+
+def resistor_cavity() -> bd.Shape:
+    cavity = cylinder(dims.RESISTOR_CAVITY_RADIUS, CAVITY_BOTTOM, CAVITY_TOP)
+    roof = cone(dims.RESISTOR_CAVITY_RADIUS, 0.0, CAVITY_TOP, CAVITY_TOP + dims.RESISTOR_CAVITY_RADIUS)  # 45 degrees, no supports
+    return cavity + roof
+
+
 def hollows_in_the_foot() -> bd.Shape:
-    """Everything we cut out of the bottom: washer pocket, plug pocket, resistor cavity."""
-    washer_top = dims.WASHER_THICKNESS
-    flange_top = washer_top + dims.FLANGE_POCKET_DEPTH
-    cavity_top = flange_top + dims.RESISTOR_CAVITY_HEIGHT
+    """Everything we cut out of the bottom: washer, plug flange, nut, magnets, resistor."""
+    washer_pocket = cylinder((dims.WASHER_OD + dims.FIT_SLIP) / 2, -1.0, WASHER_TOP)
+    flange_pocket = box_from_bottom(
+        0, 0, WASHER_TOP, dims.PLUG_FLANGE_LENGTH + dims.FIT_SLIP, dims.PLUG_FLANGE_WIDTH + dims.FIT_SLIP, dims.FLANGE_POCKET_DEPTH
+    )
+    nut_pocket = box_from_bottom(0, 0, FLANGE_TOP - 0.01, 2 * NUT_POCKET_HALF_X, 2 * NUT_POCKET_HALF_Y, CAVITY_BOTTOM - FLANGE_TOP + 0.02)
 
-    washer_pocket = cylinder((dims.WASHER_OD + dims.FIT_SLIP) / 2, -1.0, washer_top)
-    flange_pocket = cylinder(dims.FLANGE_POCKET_RADIUS, washer_top, flange_top)
-    resistor_cavity = cylinder(dims.RESISTOR_CAVITY_RADIUS, flange_top, cavity_top)
-    cavity_roof = cone(dims.RESISTOR_CAVITY_RADIUS, 0.0, cavity_top, cavity_top + dims.RESISTOR_CAVITY_RADIUS)  # 45 degrees, no supports
-
-    # A narrow slot so one resistor lead can reach down and be soldered to the washer.
-    slot_start = dims.RESISTOR_CAVITY_RADIUS - 1.0
+    # A narrow slot so one resistor lead can reach down and be soldered to the
+    # washer, out past the end of the plug's flange.
+    slot_start = NUT_POCKET_HALF_X - 0.5
     slot_length = dims.LEAD_SLOT_REACH - slot_start
-    lead_slot = box_from_bottom(slot_start + slot_length / 2, 0, washer_top, slot_length, dims.LEAD_SLOT_WIDTH, 4.0)
+    lead_slot = box_from_bottom(slot_start + slot_length / 2, 0, WASHER_TOP, slot_length, dims.LEAD_SLOT_WIDTH, CAVITY_BOTTOM - WASHER_TOP + 1.0)
 
-    return washer_pocket + flange_pocket + resistor_cavity + cavity_roof + lead_slot
+    return washer_pocket + flange_pocket + nut_pocket + lead_slot + magnet_pockets() + resistor_cavity()
 
 
 # --- The middle of each piece ---------------------------------------------------
@@ -179,18 +207,22 @@ def piece_body(kind: str) -> bd.Shape:
 # --- Contact plug -----------------------------------------------------------------
 
 
+def hexagon_prism(flats: float, z_bottom: float, z_top: float) -> bd.Shape:
+    """A hexagon given by its size across the flats, with two flats facing +-Y."""
+    hexagon = bd.RegularPolygon(flats / 2, 6, major_radius=False)
+    return bd.Pos(0, 0, z_bottom) * bd.extrude(hexagon, z_top - z_bottom)
+
+
 def make_contact_plug() -> bd.Shape:
-    """Printed insulator that sits in the washer hole and holds the M3 center screw."""
-    washer_top = dims.WASHER_THICKNESS
-    flange_top = washer_top + dims.PLUG_FLANGE_THICKNESS
-    plug = cylinder(dims.PLUG_RADIUS, 0.0, washer_top) + cylinder(dims.PLUG_FLANGE_RADIUS, washer_top, flange_top)
+    """Printed insulator that sits in the washer hole and holds the M3 hex bolt."""
+    flange_top = WASHER_TOP + dims.PLUG_FLANGE_THICKNESS
+    plug = cylinder(dims.PLUG_RADIUS, 0.0, WASHER_TOP)
+    plug += box_from_bottom(0, 0, WASHER_TOP, dims.PLUG_FLANGE_LENGTH, dims.PLUG_FLANGE_WIDTH, dims.PLUG_FLANGE_THICKNESS)
 
-    screw_hole = cylinder(dims.M3_CLEARANCE / 2, -1.0, flange_top + 1.0)
-    countersink_depth = (dims.M3_COUNTERSINK_DIA - dims.M3_CLEARANCE) / 2  # 90 degree countersink
-    countersink = cone(dims.M3_COUNTERSINK_DIA / 2, dims.M3_CLEARANCE / 2, 0.0, countersink_depth)
-    countersink += cylinder(dims.M3_COUNTERSINK_DIA / 2, -1.0, 0.0)
+    bolt_hole = cylinder(dims.M3_CLEARANCE / 2, -1.0, flange_top + 1.0)
+    head_pocket = hexagon_prism(dims.M3_HEAD_FLATS + dims.FIT_SLIP, -1.0, dims.M3_HEAD_HEIGHT)
 
-    plug = plug - screw_hole - countersink
+    plug = plug - bolt_hole - head_pocket
     plug.label = "contact_plug"
     return plug
 
@@ -203,21 +235,27 @@ def make_contact_plug() -> bd.Shape:
 def contact_washer() -> bd.Shape:
     washer = cylinder(dims.WASHER_OD / 2, 0.0, dims.WASHER_THICKNESS)
     washer -= cylinder(dims.WASHER_ID / 2, -1.0, dims.WASHER_THICKNESS + 1.0)
-    washer.label = "m12_washer"
+    washer.label = "m10_brass_washer"
     return washer
 
 
 def center_screw() -> bd.Shape:
-    head_height = (dims.M3_COUNTERSINK_DIA - 3.0) / 2
-    screw = cone(dims.M3_COUNTERSINK_DIA / 2, 1.5, 0.0, head_height) + cylinder(1.5, head_height, dims.SCREW_LENGTH)
-    screw.label = "m3_countersunk_screw"
+    """The M3 hex-head bolt, head down, with the head's flat top on the contact plane."""
+    screw = hexagon_prism(dims.M3_HEAD_FLATS, 0.0, dims.M3_HEAD_HEIGHT)
+    screw += cylinder(1.5, dims.M3_HEAD_HEIGHT, dims.M3_HEAD_HEIGHT + dims.SCREW_LENGTH)
+    screw.label = "m3_hex_bolt"
     return screw
 
 
 def center_nut() -> bd.Shape:
-    bottom = dims.WASHER_THICKNESS + dims.PLUG_FLANGE_THICKNESS
-    hexagon = bd.RegularPolygon(dims.M3_NUT_FLATS / 2, 6, major_radius=False)
-    nut = bd.Pos(0, 0, bottom) * bd.extrude(hexagon, dims.M3_NUT_THICKNESS)
-    nut -= cylinder(1.5, bottom - 1.0, bottom + dims.M3_NUT_THICKNESS + 1.0)
+    nut = hexagon_prism(dims.M3_NUT_FLATS, NUT_BOTTOM, NUT_BOTTOM + dims.M3_NUT_THICKNESS)
+    nut -= cylinder(1.5, NUT_BOTTOM - 1.0, NUT_BOTTOM + dims.M3_NUT_THICKNESS + 1.0)
     nut.label = "m3_nut"
     return nut
+
+
+def piece_magnets() -> bd.Shape:
+    magnet = cylinder(dims.PIECE_MAGNET_DIA / 2, MAGNET_BOTTOM, MAGNET_BOTTOM + dims.PIECE_MAGNET_THICKNESS)
+    magnets = bd.Pos(0, MAGNET_Y, 0) * magnet + bd.Pos(0, -MAGNET_Y, 0) * magnet
+    magnets.label = "d52_magnets"
+    return magnets

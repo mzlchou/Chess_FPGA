@@ -4,7 +4,13 @@ Cut copper tape along the engraved circles on each square: a small dot in the
 middle and a ring around it. Wires come up through the two holes and get
 soldered to the tape. The rails underneath leave room for the wiring.
 
-Print it upside down so the pad side is on the bed and comes out flat.
+Each square has a pocket underneath for an M10 steel washer. Push one all the
+way up into each pocket and put a drop of glue on it. The magnets in the
+pieces grab these washers, which holds each piece down on its pads and pulls
+it toward the middle of the square.
+
+Print it upside down so the pad side is on the bed and comes out flat. The
+washer pockets then open upward, so they need no supports.
 """
 
 from cadgen import step, stl
@@ -20,7 +26,10 @@ RAIL_HEIGHT = 6.0  # space for wires under the plate
 GROOVE_WIDTH = 0.6
 GROOVE_DEPTH = 0.4
 WIRE_HOLE_DIA = 1.6
-RING_WIRE_HOLE_X = (dims.PAD_RING_INNER + dims.PAD_RING_OUTER) / 2  # halfway across the ring pad
+TARGET_POCKET_RADIUS = (dims.TARGET_WASHER_OD + dims.FIT_SLIP) / 2
+# The ring pad's wire comes up just outside the steel washer. The center wire
+# comes up through the washer's hole.
+RING_WIRE_HOLE_X = TARGET_POCKET_RADIUS + 0.8 + WIRE_HOLE_DIA / 2
 
 
 def engraved_circle(radius: float, surface_z: float) -> bd.Shape:
@@ -58,6 +67,9 @@ def tile_2x2():
                 tile -= at_square * engraved_circle(radius, surface)
             tile -= at_square * cylinder(WIRE_HOLE_DIA / 2, RAIL_HEIGHT - 1, surface + 1)
             tile -= at_square * bd.Pos(RING_WIRE_HOLE_X, 0, 0) * cylinder(WIRE_HOLE_DIA / 2, RAIL_HEIGHT - 1, surface + 1)
+
+            # The steel washer pocket comes up from underneath and stops TARGET_SKIN below the pads.
+            tile -= at_square * cylinder(TARGET_POCKET_RADIUS, RAIL_HEIGHT - 1, surface - dims.TARGET_SKIN)
 
     # Shift down so the pad surface is z = 0, the same as the bottom of a piece.
     tile = bd.Pos(0, 0, -surface) * tile
